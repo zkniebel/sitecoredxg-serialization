@@ -1,19 +1,22 @@
 {
-  "name": "node-sitecore-rainbow-parser",
+  "name": "sitecoredxg-serialization",
   "version": "1.0.0",
-  "description": "",
+  "description": "Node.js module for SitecoreDXG that provides serialization and deserialization functionalities to read and parse Rainbow (Unicorn) YAML files and to serialize and deserialize parsed data to/from circular JSON",
+  "homepage": "https://github.com/zkniebel/sitecoredxg-serialization",
   "main": "main.js",
   "dependencies": {
     "flatted": "^2.0.0",
     "fs": "0.0.1-security",
     "glob": "^7.1.3",
     "js-yaml": "^3.12.1",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "requirejs": "^2.3.6"
   },
+  "repository": "github:zkniebel/sitecoredxg-serialization",
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Zachary Kniebel",
-  "license": "ISC"
+  "license": "MIT"
 }

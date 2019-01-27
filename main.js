@@ -14,40 +14,51 @@
  *
  */
 
-/** 
- * DEPENDENCIES 
+
+/**
+ * DEPENDENCIES
  */
 
-// node
-const fs = require("fs");
+// third-party
+const requirejs = require("requirejs");
+ 
 
-// local
-const json_converter = require("./converters/json-converter.js");
-const unicorn_converter = require("./converters/unicorn-converter.js");
+/**
+ * CONSTANTS
+ */
+
+const sitecore_constants_id     =       "constants/Sitecore";
+const unicorn_converter_id      =       "converters/Unicorn";
+const json_converter_id         =       "converters/JSON";
+const documentation_types_id    =       "types/Documentation";
+const object_types_id           =       "types/Object";
+const sitecore_types_id         =       "types/Sitecore";
 
 
 /**
- * PARAMETERS
+ * CONFIG
  */
 
-const unicornSourcesGlob = "C:/Dev/Habitat/src/**/serialization{,/!(Roles)/**}/*.yml";
-const database = "master";
+requirejs.config({
+    paths: {
+        sitecore_constants_id   :       __dirname + "/constants/Sitecore",
+        unicorn_converter_id    :       __dirname + "/converters/Unicorn",
+        json_converter_id       :       __dirname + "/converters/JSON",
+        documentation_types_id  :       __dirname + "/types/Documentation",
+        object_types_id         :       __dirname + "/types/Object",
+        sitecore_types_id       :       __dirname + "/types/Sitecore",
+    }
+});
 
 
 /**
- * EXECUTE
+ * EXPORTS
  */
 
-
-// TODO: change to read the database name from a configuration setting
-var sitecoreDatabases = unicorn_converter.readAndParseDatabases(unicornSourcesGlob, database);
-
-fs.writeFileSync("./SampleOutput.json", json_converter.serialize(sitecoreDatabases));
-
-var serialized = json_converter.serialize(sitecoreDatabases);
-var deserialized = json_converter.deserialize(serialized);
-
-console.log("Serialization from YAML to JSON for SitecoreUML completed");
-
-
+exports.Sitecore_Constants = requirejs(sitecore_constants_id);
+exports.Unicorn_Converter = requirejs(unicorn_converter_id);
+exports.Json_Converter = requirejs(json_converter_id);
+exports.Documentation_Types = requirejs(documentation_types_id);
+exports.Object_Types = requirejs(object_types_id);
+exports.Sitecore_Types = requirejs(sitecore_types_id);
 
