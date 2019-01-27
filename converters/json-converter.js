@@ -30,10 +30,22 @@ const { Template, TemplateSection, TemplateField, TemplateFolder, StandardValues
  * FACTORY METHODS
  */
 
+ /**
+  * @summary Serializes the given object into circular JSON
+  * @param {object} data the data to serialize 
+  * @description See https://github.com/WebReflection/flatted for more details on circular JSON
+  * @returns {string} the serialized data
+  */
 var serialize = function (data) {
     return circular_json.stringify(data);
 };
 
+/**
+ * @summary Deserializes the given data from circular JSON to parsed Sitecore prototypes
+ * @param {string} source the string data to deserialize 
+ * @description See https://github.com/WebReflection/flatted for more details on circular JSON
+ * @returns {object} the deserialized object
+ */
 var deserialize = function (source) {
     return circular_json.parse(source, function (key, value) {
         if (!value) {

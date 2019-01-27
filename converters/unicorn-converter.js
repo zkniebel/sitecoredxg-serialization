@@ -35,7 +35,11 @@ const { Template, TemplateSection, TemplateField, TemplateFolder, StandardValues
  * FUNCTIONS
  */
 
-var _parseSitecoreItemTree = function(sitecoreObjects) {
+ /**
+  * @summary parses a Sitecore item tree object from the given list of Sitecore object data
+  * @param {Array<object>} unicornObjects array of objects from Unicorn  
+  */
+var _parseSitecoreItemTree = function(unicornObjects) {
     var sitecoreTree = {};
     var sitecoreItems = [];
     
@@ -49,7 +53,7 @@ var _parseSitecoreItemTree = function(sitecoreObjects) {
         return field ? field.Value : undefined;
     };
     
-    sitecoreObjects.forEach(function (obj, idx, arr) {
+    unicornObjects.forEach(function (obj, idx, arr) {
         var item;
     
         // get the parent (if exists)
@@ -59,39 +63,40 @@ var _parseSitecoreItemTree = function(sitecoreObjects) {
             item = new TemplateFolder(obj.ID, obj.Template, parent, obj.Path);
             
             if (!parent) {  // if root folder add to tree
-                sitecoreTree[item.ReferenceID] = item;
-                sitecoreItems[item.ReferenceID] = item;
+                sitecoreTree[item.ID] = item;
+                sitecoreItems[item.ID] = item;
             } else if (parent instanceof TemplateFolder) {
                 parent.Children.push(item);
-                sitecoreItems[item.ReferenceID] = item;
+                sitecoreItems[item.ID] = item;
             } else {
-                throw `TemplateFolder parent must be a TemplateFolder unless the folder is at the root or layer root - item: ${item.ReferenceID} - "${item.Path}"`
+                throw `TemplateFolder parent must be a TemplateFolder unless the folder is at the root or layer root - item: ${item.ID} - "${item.Path}"`
             }
         } else if (obj.Template == sitecore_constants.TEMPLATE_TEMPLATE_ID) {    
-            var baseTemplates = getSharedUnicornFieldValue(obj, sitecore_constants.TEMPLATE_BASE_TEMPLATE_FIELD_ID);
+            var baseTemplates = getSharedUnicornFieldValue(obj, sitecore_constants.TEMPLATE_BASE_TEMPLATE_FIELD_ID)
+                .split("\n");
     
             item = new Template(obj.ID, obj.Template, parent, obj.Path, baseTemplates);
     
             if (!parent) { 
-                sitecoreTree[item.ReferenceID] = item;
-                sitecoreItems[item.ReferenceID] = item;
+                sitecoreTree[item.ID] = item;
+                sitecoreItems[item.ID] = item;
             } else if (parent instanceof TemplateFolder) {
                 parent.Children.push(item);
-                sitecoreItems[item.ReferenceID] = item;
+                sitecoreItems[item.ID] = item;
             } else {
-                throw `Template parent must be a Template folder unless the template is at the root or layer root - item: ${item.ReferenceID} - "${item.Path}"`;
+                throw `Template parent must be a Template folder unless the template is at the root or layer root - item: ${item.ID} - "${item.Path}"`;
             }
         } else if (obj.Template == sitecore_constants.TEMPLATE_SECTION_TEMPLATE_ID) {
             item = new TemplateSection(obj.ID, obj.Template, parent, obj.Path);
     
             if (!parent) { // usually means template section was added to native Sitecore template
-                sitecoreTree[item.ReferenceID] = item;
-                sitecoreItems[item.ReferenceID] = item;
+                sitecoreTree[item.ID] = item;
+                sitecoreItems[item.ID] = item;
             } else if (!(parent instanceof Template)) {
-                throw `TemplateSection parent must be a Template - item: ${item.ReferenceID} - "${item.Path}"`;
+                throw `TemplateSection parent must be a Template - item: ${item.ID} - "${item.Path}"`;
             } else {
                 parent.TemplateSections.push(item);
-                sitecoreItems[item.ReferenceID] = item;
+                sitecoreItems[item.ID] = item;
             }
         } else if (obj.Template == sitecore_constants.TEMPLATE_FIELD_TEMPLATE_ID) {      
             var fieldType = getSharedUnicornFieldValue(obj, sitecore_constants.TEMPLATE_FIELD_TYPE_FIELD_ID);
@@ -121,15 +126,15 @@ var _parseSitecoreItemTree = function(sitecoreObjects) {
             });
             
             if (!parent) { // usually means field was added to a native Sitecore template section
-                sitecoreTree[item.ReferenceID] = item;
-                sitecoreItems[item.ReferenceID] = item;
+                sitecoreTree[item.ID] = item;
+                sitecoreItems[item.ID] = item;
             } else if (!(parent instanceof TemplateSection)) {
                 throw `TemplateField parent must be a TemplateSection - field: ${obj.ID} - "${obj.Path}"`;
             } else {
                 parent.TemplateFields.push(item);
-                sitecoreItems[item.ReferenceID] = item;
+                sitecoreItems[item.ID] = item;
             }
-        } else if (parent && obj.Template == parent.ReferenceID) { // standard values
+        } else if (parent && obj.Template == parent.ID) { // standard values
             item = new StandardValues(obj.ID, obj.Template, parent, obj.Path);
     
             // set shared fields
@@ -164,7 +169,7 @@ var _parseSitecoreItemTree = function(sitecoreObjects) {
             }
     
             parent.StandardValues = item;
-            sitecoreItems[item.ReferenceID] = item;
+            sitecoreItems[item.ID] = item;
         } else {
             // TODO: for production version, this cannot throw, as it is conceivable that a __Standard Values item may have been added to a native Sitecore template
             throw `Item template was not of a recognized type - item: ${obj.ID} - "${obj.Path}"`;
@@ -172,19 +177,23 @@ var _parseSitecoreItemTree = function(sitecoreObjects) {
     });
 };
 
-
+/**
+ * @summary reads and parses the Unicorn data found using the given glob into an array of @see Database objects
+ * @param {string} unicornSourcesGlob the glob used to retrieve the Unicorn source files
+ * @returns {Array<Database>} array of parsed @see Database objects
+ */
 var readAndParseDatabases = function(unicornSourcesGlob) {
-    var sitecoreObjects = [];
+    var unicornObjects = [];
     // get and sort the paths alphabetically, then load and parse the yaml in each
     glob.sync(unicornSourcesGlob).forEach(function (file) {
         var fileName = path.resolve(file);
         var obj = yaml.safeLoad(fs.readFileSync(fileName), { filename: fileName });
         obj.SourceFilePath = fileName;
     
-        sitecoreObjects.push(obj);
+        unicornObjects.push(obj);
     });
     
-    sitecoreObjects = sitecoreObjects   
+    unicornObjects = unicornObjects   
         .filter(function (obj) { 
             return obj.Path.startsWith(sitecore_constants.TEMPLATES_ROOT_PATH) 
                 && !obj.Path.startsWith(sitecore_constants.TEMPLATES_BRANCHES_ROOT_PATH); 
@@ -206,7 +215,7 @@ var readAndParseDatabases = function(unicornSourcesGlob) {
         });
     
     var itemsByDatabase = {};
-    sitecoreObjects.forEach(function(obj) {
+    unicornObjects.forEach(function(obj) {
         if (itemsByDatabase[obj.DB]) {
             itemsByDatabase[obj.DB].push(obj);
         } else {
