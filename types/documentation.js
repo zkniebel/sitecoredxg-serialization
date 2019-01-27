@@ -18,14 +18,32 @@
  * DEPENDENCIES
  */
 
+// local
+const { Entity } = require("./object.js");
+
+
+/**
+ * ENUMS
+ */
+
+/**
+ * @summary Type names of Sitecore object types
+ */
+const TypeNames = {
+    Entity: "Metaball",
+    GenerationSource: "GenerationSource"
+};
+
 /**
  * TYPES
  */
 
 /**
- * @summary Holds the metadata for the documentation
+ * @summary Represents the metadata for the documentation
  */
-function Metaball() {
+function Metaball(DocumentationTitle = "", ProjectName = "", EnvironmentName = "", CommitAuthor = "", CommitHash = "", CommitLink = "", DeployLink = "") {
+    Entity.call(this, TypeNames.Item);
+
     /**
      * @property project name passed in the input data
      */
@@ -72,9 +90,31 @@ function Metaball() {
     this.EndTime = -1;
 };
 
+Metaball.prototype = Object.create(Entity.prototype);
+Metaball.prototype.constructor = Metaball;
+
+
+/**
+ * @summary Represents the source data to be used for generation
+ * @param {Metaball} metaball the metadata for the generation 
+ * @param {Array<Database>} databases array of databases holding the items in the solution 
+ */
+function GenerationSource(metaball, databases) {
+    Entity.call(this, TypeNames.GenerationSource);
+
+    this.DocumentationConfiguration = metaball;
+    this.Databases = databases;
+};
+
+GenerationSource.prototype = Object.create(Entity.prototype);
+GenerationSource.prototype.constructor = GenerationSource;
+
 
 /**
  * EXPORTS
  */
 
 exports.Metaball = Metaball;
+exports.GenerationSource = GenerationSource;
+
+exports.TypeNames = TypeNames;
