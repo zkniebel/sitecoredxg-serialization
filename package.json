@@ -1,0 +1,19 @@
+{
+  "name": "node-sitecore-rainbow-parser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "dependencies": {
+    "flatted": "^2.0.0",
+    "fs": "0.0.1-security",
+    "glob": "^7.1.3",
+    "js-yaml": "^3.12.1",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Zachary Kniebel",
+  "license": "ISC"
+}
