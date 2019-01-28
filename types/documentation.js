@@ -30,8 +30,19 @@ const { Entity } = require("./object.js");
  * @summary Type names of Sitecore object types
  */
 const TypeNames = {
-    Entity: "Metaball",
+    HelixLayerMap: "HelixLayerMap",
+    HelixDatabaseMap: "HelixDatabaseMap",
+    Metaball: "Metaball",
     GenerationSource: "GenerationSource"
+};
+
+/**
+ * @summary Helix layer names
+ */
+const HelixLayerNames = {
+    Foundation: "Foundation",
+    Feature: "Feature",
+    Project: "Project"
 };
 
 /**
@@ -39,10 +50,49 @@ const TypeNames = {
  */
 
 /**
+ * @summary Represents the ID map of a helix layer structure
+ * @param {string} rootID the ID of the layer root folder
+ * @param {Array<string>} moduleFolderIDs the IDs of the module folders
+ */
+function HelixLayerMap(rootID, moduleFolderIDs = []) {
+    Entity.call(this, TypeNames.HelixLayerMap);
+
+    this.RootID = rootID;
+    this.ModuleFolderIDs = moduleFolderIDs
+};
+
+HelixLayerMap.prototype = Object.create(Entity.prototype);
+HelixLayerMap.prototype.constructor = HelixLayerMap;
+
+
+/**
+ * @summary Represents the ID map of a helix structure of a database
+ * @param {string} databaseName the name of the database
+ * @param {Array<HelixLayerMap>} helixLayers the layer maps representing the structure of the helix layers in the database
+ */
+function HelixDatabaseMap(databaseName, helixLayers = []) {
+    Entity.call(this, TypeNames.HelixDatabaseMap);
+
+    this.DatabaseName = databaseName;
+    this.HelixLayers = helixLayers;
+};
+
+HelixDatabaseMap.prototype = Object.create(Entity.prototype);
+HelixDatabaseMap.prototype.constructor = HelixDatabaseMap;
+
+
+/**
  * @summary Represents the metadata for the documentation
+ * @param {string} DocumentationTitle the title to use for the generated documentation
+ * @param {string} ProjectName the name of the project
+ * @param {string} EnvironmentName the name of the environment
+ * @param {string} CommitAuthor the commit author
+ * @param {string} CommitHash the commit hash
+ * @param {string} CommitLink the URL to view the commit
+ * @param {string} DeployLink the URL to view the generated documentation
  */
 function Metaball(DocumentationTitle = "", ProjectName = "", EnvironmentName = "", CommitAuthor = "", CommitHash = "", CommitLink = "", DeployLink = "") {
-    Entity.call(this, TypeNames.Item);
+    Entity.call(this, TypeNames.Metaball);
 
     /**
      * @property project name passed in the input data
@@ -72,6 +122,12 @@ function Metaball(DocumentationTitle = "", ProjectName = "", EnvironmentName = "
      * @property deploy link passed in the input data
      */
     this.DeployLink = "";
+
+    /**
+     * @property dictionary mapping helix layer names (as keys) to their respective helix database maps in the source
+     */
+    this.HelixDatabaseMaps = {};
+
     /**
      * @property set to [true] if validation errors were detected; otherwise [false] 
      */
@@ -118,3 +174,4 @@ exports.Metaball = Metaball;
 exports.GenerationSource = GenerationSource;
 
 exports.TypeNames = TypeNames;
+exports.HelixLayerNames = HelixLayerNames;
