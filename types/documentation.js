@@ -155,8 +155,10 @@ Metaball.prototype.constructor = Metaball;
  * @param {Metaball} metaball the metadata for the generation 
  * @param {Array<Database>} databases array of databases holding the items in the solution 
  */
-function GenerationSource(metaball, databases) {
+function GenerationSource(metaball, databases, helixDatabaseMaps = []) {
     Entity.call(this, TypeNames.GenerationSource);
+
+    metaball.HelixDatabaseMaps = helixDatabaseMaps;
 
     this.DocumentationConfiguration = metaball;
     this.Databases = databases;
